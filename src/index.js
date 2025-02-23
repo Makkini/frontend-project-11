@@ -1,3 +1,6 @@
-import  './styles.scss';
-import  'bootstrap';
-console.log('Project 1');
+import './styles.css';
+import 'bootstrap';
+
+import app from './app.js';
+
+app();
