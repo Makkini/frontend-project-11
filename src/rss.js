@@ -1,5 +1,5 @@
 import axios from 'axios';
-import i18next from "./i18n.js";
+import i18next from './i18n.js';
 
 const fetchRss = async (url) => {
   const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
