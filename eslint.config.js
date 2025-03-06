@@ -50,5 +50,12 @@ export default [
       'no-console': 'off',
       'import/no-extraneous-dependencies': 'off',
     },
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
   },
+
 ];

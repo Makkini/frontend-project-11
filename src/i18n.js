@@ -12,7 +12,6 @@ i18next.init({
           notOneOf: 'RSS уже существует',
         },
         messages: {
-          loading: 'Идет загрузка...',
           loaded: 'RSS успешно загружен',
         },
       },

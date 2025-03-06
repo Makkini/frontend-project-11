@@ -2,58 +2,103 @@ import onChange from 'on-change';
 import i18next from './i18n.js';
 
 const handleProcessState = (elements, processState, feedback) => {
+  const { submitButton, urlInput } = elements;
+  const feedbackElement = feedback;
+
   switch (processState) {
     case 'sending':
-      elements.submitButton.disabled = true;
-      feedback.textContent = i18next.t('messages.loading');
-      feedback.classList.remove('text-danger', 'text-success');
-      feedback.classList.add('text-info');
+      submitButton.disabled = true;
+      feedbackElement.classList.remove('text-danger', 'text-success');
+      feedbackElement.classList.add('text-info');
       break;
     case 'sent':
-      elements.urlInput.value = '';
-      elements.urlInput.focus();
-      feedback.textContent = i18next.t('messages.loaded');
-      feedback.classList.remove('text-info', 'text-danger');
-      feedback.classList.add('text-success');
-      elements.submitButton.disabled = false;
+      urlInput.value = '';
+      urlInput.focus();
+      feedbackElement.textContent = i18next.t('messages.loaded');
+      submitButton.disabled = false;
+      feedbackElement.classList.remove('text-danger', 'text-info');
+      feedbackElement.classList.add('text-success');
       break;
     case 'error':
-      elements.submitButton.disabled = false;
-      feedback.classList.remove('text-info', 'text-success');
-      feedback.classList.add('text-danger');
+      submitButton.disabled = false;
+      feedbackElement.classList.remove('text-info', 'text-success');
+      feedbackElement.classList.add('text-danger');
       break;
     case 'filling':
-      elements.submitButton.disabled = false;
-      feedback.textContent = '';
-      feedback.classList.remove('text-info', 'text-danger', 'text-success');
+      submitButton.disabled = false;
+      feedbackElement.textContent = '';
+      feedbackElement.classList.remove('text-danger', 'text-success', 'text-info');
       break;
     default:
-      throw new Error(`Unknown process state: ${processState}`);
+      throw new Error(`Unhandled process state: ${processState}`);
   }
 };
 
 const renderError = (feedback, error) => {
+  const feedbackElement = feedback;
+
   if (error) {
-    feedback.textContent = error;
-    feedback.classList.remove('text-info', 'text-success');
-    feedback.classList.add('text-danger');
+    feedbackElement.textContent = error;
+    feedbackElement.classList.add('text-danger');
+    feedbackElement.classList.remove('text-info', 'text-success');
   } else {
-    feedback.textContent = '';
-    feedback.classList.remove('text-danger');
+    feedbackElement.textContent = '';
+    feedbackElement.classList.remove('text-danger');
   }
 };
 
-export default (state, elements) => {
-  return onChange(state, (path, value) => {
-    switch (path) {
-      case 'form.processState':
-        handleProcessState(elements, value, elements.feedback);
-        break;
-      case 'form.error':
-        renderError(elements.feedback, value);
-        break;
-      default:
-        break;
-    }
-  });
+const renderFeeds = (feeds, container) => {
+  const containerElement = container;
+
+  const feedsHtml = feeds
+    .map(
+      (feed) => `
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">${feed.title}</h5>
+          <p class="card-text">${feed.description}</p>
+        </div>
+      </div>
+      `,
+    )
+    .join('');
+
+  containerElement.innerHTML = `<h2>Фиды</h2>${feedsHtml}`;
 };
+const renderPosts = (posts, container, readPostIds) => {
+  const containerElement = container;
+
+  const postsHtml = posts
+    .map(
+      (post) => `
+      <div class="card mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <a href="${post.link}" target="_blank" rel="noopener noreferrer" class="${readPostIds.includes(post.id) ? 'fw-normal link-secondary text-muted' : 'fw-bold'}" data-id="${post.id}">${post.title}</a>
+          <button class="btn btn-primary btn-sm preview-button" data-post-id="${post.id}">Просмотр</button>
+        </div>
+      </div>
+    `,
+    )
+    .join('');
+
+  containerElement.innerHTML = `<h2>Посты</h2>${postsHtml}`;
+};
+export default (state, elements) => onChange(state, (path, value) => {
+  switch (path) {
+    case 'form.processState':
+      handleProcessState(elements, value, elements.feedback);
+      break;
+    case 'form.error':
+      renderError(elements.feedback, value);
+      break;
+    case 'feeds':
+      renderFeeds(value, elements.feedsContainer);
+      break;
+    case 'posts':
+    case 'readPostIds': // Объединяем логику для posts и readPostIds
+      renderPosts(state.posts, elements.postsContainer, state.readPostIds);
+      break;
+    default:
+      break;
+  }
+});

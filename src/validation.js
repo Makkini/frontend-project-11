@@ -16,7 +16,6 @@ const validateUrl = (url, feeds) => {
     .required()
     .url()
     .notOneOf(feeds);
-
   return schema.validate(url);
 };
 
