@@ -10,6 +10,7 @@ i18next.init({
           required: 'Не должно быть пустым',
           url: 'Ссылка должна быть валидным URL',
           notOneOf: 'RSS уже существует',
+          invalidRss: 'Ресурс не содержит валидный RSS'
         },
         messages: {
           loaded: 'RSS успешно загружен',

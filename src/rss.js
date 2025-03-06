@@ -1,4 +1,5 @@
 import axios from 'axios';
+import i18next from "./i18n.js";
 
 const fetchRss = async (url) => {
   const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
@@ -11,7 +12,7 @@ const parseRss = (data) => {
   const doc = parser.parseFromString(data, 'application/xml');
   const parseError = doc.querySelector('parsererror');
   if (parseError) {
-    throw new Error('Ошибка парсинга RSS');
+    throw new Error(i18next.t('errors.invalidRss'));
   }
   const feed = {
     title: doc.querySelector('channel > title').textContent,
