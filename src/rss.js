@@ -3,8 +3,15 @@ import i18next from "./i18n.js";
 
 const fetchRss = async (url) => {
   const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
-  const response = await axios.get(proxyUrl);
-  return response.data.contents;
+  try {
+    const response = await axios.get(proxyUrl);
+    return response.data.contents;
+  } catch (err) {
+    if (err.isAxiosError) {
+      throw new Error(i18next.t('errors.networkError'));
+    }
+    throw new Error(i18next.t('errors.invalidRss'));
+  }
 };
 
 const parseRss = (data) => {
