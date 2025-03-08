@@ -1,11 +1,22 @@
+import i18next from 'i18next';
 import uniqid from 'uniqid';
+import { Modal } from 'bootstrap';
+import ruTranslation from './locales/ru.json';
 import view from './view.js';
 import validateUrl from './validation.js';
-import { fetchRss, parseRss } from './rss.js';
+import { parseRss, fetchRss } from './rss.js';
 import updateFeeds from './updateFeeds.js';
-import handlePreviewClick from './handlePreviewClick.js';
 
-const initApp = () => {
+const initApp = async () => {
+  const i18nInstance = i18next.createInstance();
+  await i18nInstance.init({
+    lng: 'ru',
+    debug: false,
+    resources: {
+      ru: ruTranslation,
+    },
+  });
+
   const state = {
     form: {
       processState: 'filling',
@@ -23,9 +34,30 @@ const initApp = () => {
     feedback: document.querySelector('.feedback'),
     feedsContainer: document.querySelector('.feeds'),
     postsContainer: document.querySelector('.posts'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalBody: document.querySelector('.modal-body'),
+    fullArticleLink: document.querySelector('.full-article'),
   };
 
-  const watchedState = view(state, elements);
+  const watchedState = view(state, elements, i18nInstance);
+
+  const handlePreviewClick = (postId) => {
+    const post = watchedState.posts.find((p) => p.id === postId);
+
+    if (post) {
+      if (!watchedState.readPostIds.includes(postId)) {
+        watchedState.readPostIds.push(postId);
+      }
+
+      elements.modalTitle.textContent = post.title;
+      elements.modalBody.textContent = post.description;
+      elements.fullArticleLink.href = post.link;
+
+      const modalElement = document.getElementById('modal');
+      const modal = new Modal(modalElement);
+      modal.show();
+    }
+  };
 
   elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -52,11 +84,8 @@ const initApp = () => {
   elements.postsContainer.addEventListener('click', (e) => {
     if (e.target.classList.contains('preview-button')) {
       const { postId } = e.target.dataset;
-      handlePreviewClick(watchedState, postId);
+      handlePreviewClick(postId);
     }
-  });
-
-  elements.postsContainer.addEventListener('click', (e) => {
     if (e.target.tagName === 'A') {
       const postId = e.target.dataset.id;
 

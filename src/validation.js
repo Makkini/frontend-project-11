@@ -1,17 +1,16 @@
 import * as yup from 'yup';
-import i18next from './i18n.js';
-
-yup.setLocale({
-  string: {
-    url: i18next.t('errors.url'),
-    required: i18next.t('errors.required'),
-  },
-  mixed: {
-    notOneOf: i18next.t('errors.notOneOf'),
-  },
-});
 
 const validateUrl = (url, feeds) => {
+  yup.setLocale({
+    string: {
+      url: 'errors.url',
+      required: 'errors.required',
+    },
+    mixed: {
+      notOneOf: 'errors.notOneOf',
+    },
+  });
+
   const schema = yup.string()
     .required()
     .url()

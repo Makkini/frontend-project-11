@@ -22,7 +22,6 @@ const updateFeeds = async (watchedState) => {
         );
       }
     });
-
     await Promise.all(feedUpdates);
   } catch (err) {
     console.error('Ошибка при обновлении RSS:', err.message);

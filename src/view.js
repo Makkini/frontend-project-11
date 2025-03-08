@@ -1,7 +1,6 @@
 import onChange from 'on-change';
-import i18next from './i18n.js';
 
-const handleProcessState = (elements, processState, feedback) => {
+const handleProcessState = (elements, processState, feedback, i18nInstance) => {
   const { submitButton, urlInput } = elements;
   const feedbackElement = feedback;
 
@@ -14,7 +13,7 @@ const handleProcessState = (elements, processState, feedback) => {
     case 'sent':
       urlInput.value = '';
       urlInput.focus();
-      feedbackElement.textContent = i18next.t('messages.loaded');
+      feedbackElement.textContent = i18nInstance.t('messages.loaded');
       submitButton.disabled = false;
       feedbackElement.classList.remove('text-danger', 'text-info');
       feedbackElement.classList.add('text-success');
@@ -34,11 +33,11 @@ const handleProcessState = (elements, processState, feedback) => {
   }
 };
 
-const renderError = (feedback, error) => {
+const renderError = (feedback, error, i18nInstance) => {
   const feedbackElement = feedback;
 
   if (error) {
-    feedbackElement.textContent = error;
+    feedbackElement.textContent = i18nInstance.t(error);
     feedbackElement.classList.add('text-danger');
     feedbackElement.classList.remove('text-info', 'text-success');
   } else {
@@ -65,6 +64,7 @@ const renderFeeds = (feeds, container) => {
 
   containerElement.innerHTML = `<h2>Фиды</h2>${feedsHtml}`;
 };
+
 const renderPosts = (posts, container, readPostIds) => {
   const containerElement = container;
 
@@ -83,19 +83,20 @@ const renderPosts = (posts, container, readPostIds) => {
 
   containerElement.innerHTML = `<h2>Посты</h2>${postsHtml}`;
 };
-export default (state, elements) => onChange(state, (path, value) => {
+
+export default (state, elements, i18nInstance) => onChange(state, (path, value) => {
   switch (path) {
     case 'form.processState':
-      handleProcessState(elements, value, elements.feedback);
+      handleProcessState(elements, value, elements.feedback, i18nInstance);
       break;
     case 'form.error':
-      renderError(elements.feedback, value);
+      renderError(elements.feedback, value, i18nInstance);
       break;
     case 'feeds':
       renderFeeds(value, elements.feedsContainer);
       break;
     case 'posts':
-    case 'readPostIds': // Объединяем логику для posts и readPostIds
+    case 'readPostIds':
       renderPosts(state.posts, elements.postsContainer, state.readPostIds);
       break;
     default:

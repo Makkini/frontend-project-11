@@ -1,5 +1,4 @@
 import axios from 'axios';
-import i18next from './i18n.js';
 
 const fetchRss = async (url) => {
   const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
@@ -8,9 +7,9 @@ const fetchRss = async (url) => {
     return response.data.contents;
   } catch (err) {
     if (err.isAxiosError) {
-      throw new Error(i18next.t('errors.networkError'));
+      throw new Error('errors.networkError');
     }
-    throw new Error(i18next.t('errors.invalidRss'));
+    throw new Error('errors.invalidRss');
   }
 };
 
@@ -19,7 +18,7 @@ const parseRss = (data) => {
   const doc = parser.parseFromString(data, 'application/xml');
   const parseError = doc.querySelector('parsererror');
   if (parseError) {
-    throw new Error(i18next.t('errors.invalidRss'));
+    throw new Error('errors.invalidRss');
   }
   const feed = {
     title: doc.querySelector('channel > title').textContent,
@@ -33,4 +32,5 @@ const parseRss = (data) => {
   }));
   return { feed, posts };
 };
-export { fetchRss, parseRss };
+
+export { parseRss, fetchRss };
