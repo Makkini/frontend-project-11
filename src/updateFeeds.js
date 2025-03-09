@@ -1,10 +1,9 @@
 import uniqid from 'uniqid';
 import { fetchRss, parseRss } from './rss.js';
 
-const updateFeeds = async (watchedState) => {
-  try {
-    const feedUpdates = watchedState.feeds.map(async (feed) => {
-      const data = await fetchRss(feed.url);
+const updateFeeds = (watchedState) => {
+  const feedUpdates = watchedState.feeds.map((feed) => fetchRss(feed.url)
+    .then((data) => {
       const { posts: newPosts } = parseRss(data);
 
       const existingPostLinks = watchedState.posts.map((post) => post.link);
@@ -21,13 +20,15 @@ const updateFeeds = async (watchedState) => {
           })),
         );
       }
+    })
+    .catch((err) => {
+      console.error('Ошибка при обновлении RSS:', err.message);
+    }));
+
+  Promise.all(feedUpdates)
+    .finally(() => {
+      setTimeout(() => updateFeeds(watchedState), 5000);
     });
-    await Promise.all(feedUpdates);
-  } catch (err) {
-    console.error('Ошибка при обновлении RSS:', err.message);
-  } finally {
-    setTimeout(() => updateFeeds(watchedState), 5000);
-  }
 };
 
 export default updateFeeds;
