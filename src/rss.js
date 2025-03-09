@@ -1,18 +1,3 @@
-import axios from 'axios';
-
-const fetchRss = async (url) => {
-  const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
-  try {
-    const response = await axios.get(proxyUrl);
-    return response.data.contents;
-  } catch (err) {
-    if (err.isAxiosError) {
-      throw new Error('errors.networkError');
-    }
-    throw new Error('errors.invalidRss');
-  }
-};
-
 const parseRss = (data) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(data, 'application/xml');
@@ -33,4 +18,4 @@ const parseRss = (data) => {
   return { feed, posts };
 };
 
-export { parseRss, fetchRss };
+export default parseRss;
