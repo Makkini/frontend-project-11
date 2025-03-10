@@ -7,49 +7,6 @@ import view from './view.js';
 import validateUrl from './validation.js';
 import parseRss from './rss.js';
 
-const fetchRss = async (url) => {
-  const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
-  try {
-    const response = await axios.get(proxyUrl);
-    return response.data.contents;
-  } catch (err) {
-    if (err.isAxiosError) {
-      throw new Error('errors.networkError');
-    }
-    throw new Error('errors.invalidRss');
-  }
-};
-
-const updateFeeds = (watchedState) => {
-  const feedUpdates = watchedState.feeds.map((feed) => fetchRss(feed.url)
-    .then((data) => {
-      const { posts: newPosts } = parseRss(data);
-
-      const existingPostLinks = watchedState.posts.map((post) => post.link);
-      const uniqueNewPosts = newPosts.filter(
-        (post) => !existingPostLinks.includes(post.link),
-      );
-
-      if (uniqueNewPosts.length > 0) {
-        watchedState.posts.unshift(
-          ...uniqueNewPosts.map((post) => ({
-            ...post,
-            id: uniqid(),
-            feedId: feed.id,
-          })),
-        );
-      }
-    })
-    .catch((err) => {
-      console.error('Ошибка при обновлении RSS:', err.message);
-    }));
-
-  Promise.all(feedUpdates)
-    .finally(() => {
-      setTimeout(() => updateFeeds(watchedState), 5000);
-    });
-};
-
 const initApp = () => {
   const i18nInstance = i18next.createInstance();
   i18nInstance.init({
@@ -82,6 +39,48 @@ const initApp = () => {
     };
 
     const watchedState = view(state, elements, i18nInstance);
+    const fetchRss = async (url) => {
+      const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
+      try {
+        const response = await axios.get(proxyUrl);
+        return response.data.contents;
+      } catch (err) {
+        if (err.isAxiosError) {
+          throw new Error('errors.networkError');
+        }
+        throw new Error('errors.invalidRss');
+      }
+    };
+
+    const updateFeeds = () => {
+      const feedUpdates = watchedState.feeds.map((feed) => fetchRss(feed.url)
+        .then((data) => {
+          const { posts: newPosts } = parseRss(data);
+
+          const existingPostLinks = watchedState.posts.map((post) => post.link);
+          const uniqueNewPosts = newPosts.filter(
+            (post) => !existingPostLinks.includes(post.link),
+          );
+
+          if (uniqueNewPosts.length > 0) {
+            watchedState.posts.unshift(
+              ...uniqueNewPosts.map((post) => ({
+                ...post,
+                id: uniqid(),
+                feedId: feed.id,
+              })),
+            );
+          }
+        })
+        .catch((err) => {
+          console.error('Ошибка при обновлении RSS:', err.message);
+        }));
+
+      Promise.all(feedUpdates)
+        .finally(() => {
+          setTimeout(() => updateFeeds(watchedState), 5000);
+        });
+    };
 
     const handlePreviewClick = (postId) => {
       const post = watchedState.posts.find((p) => p.id === postId);
