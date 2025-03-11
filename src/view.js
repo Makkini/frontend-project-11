@@ -1,4 +1,5 @@
 import onChange from 'on-change';
+import { Modal } from 'bootstrap';
 
 const handleProcessState = (elements, processState, feedback, i18nInstance) => {
   const { submitButton, urlInput } = elements;
@@ -84,6 +85,21 @@ const renderPosts = (posts, container, readPostIds) => {
   containerElement.innerHTML = `<h2>Посты</h2>${postsHtml}`;
 };
 
+const renderModal = (modalState, elements) => {
+  const {
+    modalTitle, modalBody, fullArticleLink, modalElement,
+  } = elements;
+
+  if (modalState.isOpen) {
+    modalTitle.textContent = modalState.title;
+    modalBody.textContent = modalState.description;
+    fullArticleLink.href = modalState.link;
+
+    const modal = new Modal(modalElement);
+    modal.show();
+  }
+};
+
 export default (state, elements, i18nInstance) => onChange(state, (path, value) => {
   switch (path) {
     case 'form.processState':
@@ -98,6 +114,9 @@ export default (state, elements, i18nInstance) => onChange(state, (path, value) 
     case 'posts':
     case 'readPostIds':
       renderPosts(state.posts, elements.postsContainer, state.readPostIds);
+      break;
+    case 'modal':
+      renderModal(value, elements);
       break;
     default:
       break;

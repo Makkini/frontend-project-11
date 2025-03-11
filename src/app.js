@@ -1,6 +1,5 @@
 import i18next from 'i18next';
 import uniqid from 'uniqid';
-import { Modal } from 'bootstrap';
 import axios from 'axios';
 import ruTranslation from './locales/ru.js';
 import view from './view.js';
@@ -24,6 +23,12 @@ const initApp = () => {
       feeds: [],
       posts: [],
       readPostIds: [],
+      modal: {
+        isOpen: false,
+        title: '',
+        description: '',
+        link: '',
+      },
     };
 
     const elements = {
@@ -36,11 +41,20 @@ const initApp = () => {
       modalTitle: document.querySelector('.modal-title'),
       modalBody: document.querySelector('.modal-body'),
       fullArticleLink: document.querySelector('.full-article'),
+      modalElement: document.getElementById('modal'),
     };
 
     const watchedState = view(state, elements, i18nInstance);
+
+    const getProxyUrl = (url) => {
+      const proxy = new URL('https://allorigins.hexlet.app/get');
+      proxy.searchParams.set('url', url);
+      proxy.searchParams.set('disableCache', 'true');
+      return proxy.toString();
+    };
+
     const fetchRss = async (url) => {
-      const proxyUrl = `https://allorigins.hexlet.app/get?url=${encodeURIComponent(url)}&disableCache=true`;
+      const proxyUrl = getProxyUrl(url);
       try {
         const response = await axios.get(proxyUrl);
         return response.data.contents;
@@ -51,6 +65,8 @@ const initApp = () => {
         throw new Error('errors.invalidRss');
       }
     };
+
+    const feedUpdateInterval = 5000;
 
     const updateFeeds = () => {
       const feedUpdates = watchedState.feeds.map((feed) => fetchRss(feed.url)
@@ -78,7 +94,7 @@ const initApp = () => {
 
       Promise.all(feedUpdates)
         .finally(() => {
-          setTimeout(() => updateFeeds(watchedState), 5000);
+          setTimeout(() => updateFeeds(watchedState), feedUpdateInterval);
         });
     };
 
@@ -90,13 +106,12 @@ const initApp = () => {
           watchedState.readPostIds.push(postId);
         }
 
-        elements.modalTitle.textContent = post.title;
-        elements.modalBody.textContent = post.description;
-        elements.fullArticleLink.href = post.link;
-
-        const modalElement = document.getElementById('modal');
-        const modal = new Modal(modalElement);
-        modal.show();
+        watchedState.modal = {
+          isOpen: true,
+          title: post.title,
+          description: post.description,
+          link: post.link,
+        };
       }
     };
 
